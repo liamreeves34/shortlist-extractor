@@ -218,3 +218,28 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Project
+# Secrets: any .env variant, but keep the template (the ! line must come after .env.*)
+.env
+.env.*
+!.env.example
+
+# Local planning notes, never published
+.notes/
+
+# Raw postings stay local; only manifests are committed
+data/*
+!data/.gitkeep
+!data/manifests/
+
+# Model weights and training checkpoints (publish via release assets or the HF Hub)
+models/
+checkpoint-*/
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.ckpt
+*.gguf
+*.onnx
