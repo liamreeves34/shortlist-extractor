@@ -1,0 +1,33 @@
+[project]
+name = "shortlist-extractor"
+version = "0.1.0"
+description = "Extracts deadlines, eligibility, and pay from internship postings: rules vs. LLM vs. LoRA student"
+readme = "README.md"
+authors = [
+    { name = "Liam Reeves", email = "liamreeves34@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.143.3",
+    "httpx>=0.28.1",
+    "pydantic>=2.14.1",
+    "pyyaml>=6.0.3",
+    "uvicorn[standard]>=0.54.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "ruff>=0.17.1",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
