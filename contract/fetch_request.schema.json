@@ -1,0 +1,25 @@
+{
+  "properties": {
+    "provider": {
+      "enum": [
+        "greenhouse",
+        "lever",
+        "ashby"
+      ],
+      "title": "Provider",
+      "type": "string"
+    },
+    "token": {
+      "maxLength": 100,
+      "minLength": 1,
+      "title": "Token",
+      "type": "string"
+    }
+  },
+  "required": [
+    "provider",
+    "token"
+  ],
+  "title": "FetchRequest",
+  "type": "object"
+}

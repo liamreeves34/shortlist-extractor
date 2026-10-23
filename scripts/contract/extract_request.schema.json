@@ -1,0 +1,60 @@
+{
+  "properties": {
+    "text": {
+      "anyOf": [
+        {
+          "maxLength": 100000,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Text"
+    },
+    "url": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Url"
+    },
+    "fields": {
+      "anyOf": [
+        {
+          "items": {
+            "enum": [
+              "title",
+              "organization",
+              "location",
+              "start_term",
+              "deadline",
+              "deadline_type",
+              "degree_levels",
+              "citizenship",
+              "clearance",
+              "work_mode",
+              "pay",
+              "skills"
+            ],
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Fields"
+    }
+  },
+  "title": "ExtractRequest",
+  "type": "object"
+}
