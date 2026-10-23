@@ -1,0 +1,198 @@
+{
+  "$defs": {
+    "Pay": {
+      "properties": {
+        "min": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Min"
+        },
+        "max": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max"
+        },
+        "period": {
+          "default": "UNKNOWN",
+          "enum": [
+            "HOUR",
+            "YEAR",
+            "UNKNOWN"
+          ],
+          "title": "Period",
+          "type": "string"
+        },
+        "currency": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Currency"
+        }
+      },
+      "title": "Pay",
+      "type": "object"
+    },
+    "SourcePosting": {
+      "properties": {
+        "external_id": {
+          "title": "External Id",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "organization": {
+          "title": "Organization",
+          "type": "string"
+        },
+        "location_raw": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Location Raw"
+        },
+        "url": {
+          "title": "Url",
+          "type": "string"
+        },
+        "updated_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Updated At"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "content_hash": {
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "structured": {
+          "$ref": "#/$defs/Structured",
+          "default": {
+            "work_mode": null,
+            "pay": null,
+            "commitment": null
+          }
+        }
+      },
+      "required": [
+        "external_id",
+        "title",
+        "organization",
+        "url",
+        "text",
+        "content_hash"
+      ],
+      "title": "SourcePosting",
+      "type": "object"
+    },
+    "Structured": {
+      "properties": {
+        "work_mode": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Work Mode"
+        },
+        "pay": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Pay"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "commitment": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Commitment"
+        }
+      },
+      "title": "Structured",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "provider": {
+      "title": "Provider",
+      "type": "string"
+    },
+    "token": {
+      "title": "Token",
+      "type": "string"
+    },
+    "fetched_at": {
+      "format": "date-time",
+      "title": "Fetched At",
+      "type": "string"
+    },
+    "postings": {
+      "items": {
+        "$ref": "#/$defs/SourcePosting"
+      },
+      "title": "Postings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "provider",
+    "token",
+    "fetched_at",
+    "postings"
+  ],
+  "title": "FetchResponse",
+  "type": "object"
+}
