@@ -20,9 +20,14 @@ def _base_url() -> str:
     return os.environ.get("EXTRACTOR_URL", "http://localhost:8001")
 
 
-def extract(*, text: str | None = None, url: str | None = None, fields: list[str] | None = None,
-            http: httpx.Client | None = None,) -> ExtractionResult:
-    #Extract fields from posting text (or a supported job board URL).
+def extract(
+    *,
+    text: str | None = None,
+    url: str | None = None,
+    fields: list[str] | None = None,
+    http: httpx.Client | None = None,
+) -> ExtractionResult:
+    # Extract fields from posting text (or a supported job board URL).
     if (text is None) == (url is None):
         raise ValueError("Pass exactly one of text= or url=.")
     if _mode() == "stub":
@@ -36,8 +41,10 @@ def extract(*, text: str | None = None, url: str | None = None, fields: list[str
     return ExtractionResult.from_json(data)
 
 
-def fetch_source(*, provider: str, token: str, http: httpx.Client | None = None) -> list[FetchedPosting]:
-    #Fetch one employer's internship postings from its public job board.
+def fetch_source(
+    *, provider: str, token: str, http: httpx.Client | None = None
+) -> list[FetchedPosting]:
+    # Fetch one employer's internship postings from its public job board.
     if _mode() == "stub":
         return [FetchedPosting.from_json(p) for p in stub_postings(provider, token)]
     data = _post("/v1/sources/fetch", {"provider": provider, "token": token}, http)
