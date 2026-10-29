@@ -1,0 +1,108 @@
+[
+  {
+    "additional": "<div>Applications close December 5, 2026.</div>",
+    "additionalPlain": "Applications close December 5, 2026.\n",
+    "categories": {
+      "commitment": "Intern (Hourly)",
+      "department": "Engineering",
+      "location": "New York, NY",
+      "team": "Data",
+      "allLocations": ["New York, NY"]
+    },
+    "createdAt": 1792944000000,
+    "descriptionPlain": "Quillworks makes note-taking tools for research teams.\n \nYou’ll join a small data team.\n",
+    "description": "<div>Quillworks makes note-taking tools for research teams.</div>\n<div>&nbsp;</div>\n<div><span style=\"font-size: 16px;\">You’ll join a small data team.</span></div>",
+    "id": "3f2b6c1e-8a4d-4c7e-9b1a-0d5e6f7a8b91",
+    "lists": [
+      {
+        "text": "What you'll do:",
+        "content": "\n<li>Build data pipelines in Python</li>\n<li>Keep our reports &amp; dashboards honest</li>\n"
+      }
+    ],
+    "salaryRange": { "min": 30, "max": 38, "currency": "USD", "interval": "per-hour-wage" },
+    "text": "Data Engineer",
+    "country": "US",
+    "workplaceType": "hybrid",
+    "opening": "",
+    "openingPlain": "",
+    "descriptionBody": "<div>Quillworks makes note-taking tools for research teams.</div>\n<div>&nbsp;</div>\n<div><span style=\"font-size: 16px;\">You&rsquo;ll join a small data team.</span></div>",
+    "descriptionBodyPlain": "Quillworks makes note-taking tools for research teams.\n \nYou’ll join a small data team.\n",
+    "hostedUrl": "https://jobs.lever.co/quillworks/3f2b6c1e-8a4d-4c7e-9b1a-0d5e6f7a8b91",
+    "applyUrl": "https://jobs.lever.co/quillworks/3f2b6c1e-8a4d-4c7e-9b1a-0d5e6f7a8b91/apply"
+  },
+  {
+    "additional": "",
+    "additionalPlain": "",
+    "categories": {
+      "department": "Engineering",
+      "location": "Remote",
+      "team": "Platform",
+      "allLocations": ["Remote"]
+    },
+    "createdAt": 1793462400000,
+    "descriptionPlain": "Help us build the editor.\n",
+    "description": "<div>Help us build the editor.</div>",
+    "id": "7c9d0e1f-2a3b-4c5d-8e6f-1a2b3c4d5e6f",
+    "lists": [],
+    "text": "Software Engineering Intern, Summer 2027",
+    "country": "US",
+    "workplaceType": "remote",
+    "opening": "",
+    "openingPlain": "",
+    "descriptionBody": "<div>Help us build the editor.</div>",
+    "descriptionBodyPlain": "Help us build the editor.\n",
+    "hostedUrl": "https://jobs.lever.co/quillworks/7c9d0e1f-2a3b-4c5d-8e6f-1a2b3c4d5e6f",
+    "applyUrl": "https://jobs.lever.co/quillworks/7c9d0e1f-2a3b-4c5d-8e6f-1a2b3c4d5e6f/apply"
+  },
+  {
+    "additional": "",
+    "additionalPlain": "",
+    "categories": {
+      "commitment": "Regular Full Time (Salary)",
+      "department": "Design",
+      "location": "New York, NY",
+      "team": "Design",
+      "allLocations": ["New York, NY"]
+    },
+    "createdAt": 1792944000000,
+    "descriptionPlain": "Design the next version of Quillworks.\n",
+    "description": "<div>Design the next version of Quillworks.</div>",
+    "id": "b1c2d3e4-f5a6-4b7c-8d9e-0f1a2b3c4d5e",
+    "lists": [],
+    "salaryRange": { "min": 95000, "max": 140000, "currency": "USD", "interval": "per-year-salary" },
+    "text": "Product Designer",
+    "country": "US",
+    "workplaceType": "onsite",
+    "opening": "",
+    "openingPlain": "",
+    "descriptionBody": "<div>Design the next version of Quillworks.</div>",
+    "descriptionBodyPlain": "Design the next version of Quillworks.\n",
+    "hostedUrl": "https://jobs.lever.co/quillworks/b1c2d3e4-f5a6-4b7c-8d9e-0f1a2b3c4d5e",
+    "applyUrl": "https://jobs.lever.co/quillworks/b1c2d3e4-f5a6-4b7c-8d9e-0f1a2b3c4d5e/apply"
+  },
+  {
+    "additional": "",
+    "additionalPlain": "",
+    "categories": {
+      "commitment": "Regular Full Time (Salary)",
+      "department": "People",
+      "location": "New York, NY",
+      "team": "Communications",
+      "allLocations": ["New York, NY"]
+    },
+    "createdAt": 1792944000000,
+    "descriptionPlain": "Keep everyone in the loop.\n",
+    "description": "<div>Keep everyone in the loop.</div>",
+    "id": "d4e5f6a7-b8c9-4d0e-9f1a-2b3c4d5e6f7a",
+    "lists": [],
+    "text": "Internal Communications Lead",
+    "country": "US",
+    "workplaceType": "hybrid",
+    "opening": "",
+    "openingPlain": "",
+    "descriptionBody": "<div>Keep everyone in the loop.</div>",
+    "descriptionBodyPlain": "Keep everyone in the loop.\n",
+    "hostedUrl": "https://jobs.lever.co/quillworks/d4e5f6a7-b8c9-4d0e-9f1a-2b3c4d5e6f7a",
+    "applyUrl": "https://jobs.lever.co/quillworks/d4e5f6a7-b8c9-4d0e-9f1a-2b3c4d5e6f7a/apply"
+  }
+]
