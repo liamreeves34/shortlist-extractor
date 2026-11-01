@@ -6,9 +6,9 @@ and records time.sleep calls instead of sleeping.
 
 import httpx
 import pytest
+from service.connectors.greenhouse import UnknownBoard
 
 from service import connectors
-from service.connectors.greenhouse import UnknownBoard
 
 UA = "shortlist-extractor tests (test@example.com)"
 

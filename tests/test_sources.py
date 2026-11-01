@@ -12,7 +12,6 @@ import re
 from pathlib import Path
 
 import yaml
-
 from scripts.seed_sources import find_tokens
 
 SOURCES_YAML = Path(__file__).resolve().parent.parent / "sources.yaml"
