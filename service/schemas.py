@@ -61,7 +61,7 @@ class ExtractResponse(BaseModel):
 
 # ---------- /v1/sources/fetch ----------
 class FetchRequest(BaseModel):
-    provider: Literal["greenhouse", "lever", "ashby"]
+    provider: Literal["greenhouse", "lever"]
     token: str = Field(min_length=1, max_length=100)
 
 
@@ -69,6 +69,7 @@ class Structured(BaseModel):
     work_mode: str | None = None
     pay: Pay | None = None
     commitment: str | None = None
+    deadline: str | None = None
 
 
 class SourcePosting(BaseModel):
