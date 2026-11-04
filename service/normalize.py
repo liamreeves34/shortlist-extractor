@@ -1,7 +1,7 @@
 import hashlib
 import html
 import re
-
+import codecs
 from bs4 import BeautifulSoup
 
 
@@ -39,6 +39,10 @@ def html_to_text(text: str) -> str:  # removes all the html aspects from a descr
     text = re.sub(r"\n{3,}", "\n\n", text)  # remove significant newline additions
     return text.strip()  # further remove any artifact whitespace
 
+def unicode_to_text(text: str) -> str:
+    text = codecs.decode(text, "unicode_escape") #precursor step for lever lists
+    text = html_to_text(text)
+    return text
 
 def content_hash(text: str) -> str:
     text = "".join(text.strip().split())  # remove all of the whitespace

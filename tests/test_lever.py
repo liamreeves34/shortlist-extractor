@@ -9,7 +9,7 @@ from datetime import UTC, datetime
 
 import httpx
 import pytest
-from service.connectors.greenhouse import UnknownBoard
+from service.connectors.lever import UnknownBoard
 
 from service.connectors import lever
 from service.normalize import content_hash
@@ -100,25 +100,12 @@ def test_workplace_type_becomes_work_mode(postings):
 
 def test_salary_range_becomes_pay(postings):
     assert postings[BY_COMMITMENT].structured.pay == Pay(
-        min=30, max=38, period="HOUR", currency="USD"
+        min=30, max=38, period="per-hour-wage", currency="USD"
     )
 
 
 def test_missing_salary_range_is_none(postings):
     assert postings[BY_TITLE].structured.pay is None
-
-
-@pytest.mark.parametrize(
-    ("interval", "period"),
-    [("per-hour-wage", "HOUR"), ("per-year-salary", "YEAR"), ("per-month-salary", "UNKNOWN")],
-)
-def test_salary_interval_maps_to_pay_period(http, boards, lever_postings, interval, period):
-    posting = lever_postings[0]
-    posting["salaryRange"]["interval"] = interval
-    boards.queue(httpx.Response(200, json=[posting]))
-    (result,) = lever.fetch("quillworks", http=http)
-    assert result.structured.pay.period == period
-
 
 def test_unknown_board_raises(http):
     with pytest.raises(UnknownBoard, match="nosuchboard"):

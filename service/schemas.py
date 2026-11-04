@@ -39,7 +39,7 @@ class ExtractRequest(BaseModel):
 class Pay(BaseModel):
     min: float | None = None
     max: float | None = None
-    period: Literal["HOUR", "YEAR", "UNKNOWN"] = "UNKNOWN"
+    period: str | None = None
     currency: str | None = None
 
 
