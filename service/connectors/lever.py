@@ -1,9 +1,10 @@
+from datetime import UTC, datetime
+
 import httpx
 
-from datetime import datetime, timezone
 from service.connectors.filter import is_internship
 from service.normalize import content_hash, html_to_text, unicode_to_text
-from service.schemas import SourcePosting, Structured, Pay
+from service.schemas import Pay, SourcePosting, Structured
 
 API = "https://api.lever.co/v0/postings/{token}?mode=json"
 class UnknownBoard(Exception): ...
@@ -44,7 +45,7 @@ def fetch(
         for dict_of_title_section in list_of_additional_info: #add lists to the content string
             title, text = dict_of_title_section.values()
             text = unicode_to_text(text)
-            buildstring = "\n".join([title, text])
+            buildstring = f"{title}\n{text}"
             content+= buildstring
 
         hashed_content = content_hash(content)
@@ -63,7 +64,7 @@ def fetch(
             commitment=((job.get("categories") or {}).get("commitment") or None),
             deadline=job.get("application_deadline")
         )
-        dt_object = datetime.fromtimestamp(job["createdAt"] / 1000.0, tz=timezone.utc)
+        dt_object = datetime.fromtimestamp(job["createdAt"] / 1000.0, tz=UTC)
         posting = SourcePosting(
             external_id=str(job["id"]),
             title=job["text"],

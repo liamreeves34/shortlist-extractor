@@ -9,9 +9,9 @@ from datetime import UTC, datetime
 
 import httpx
 import pytest
-from service.connectors.lever import UnknownBoard
 
 from service.connectors import lever
+from service.connectors.lever import UnknownBoard
 from service.normalize import content_hash
 from service.schemas import Pay, SourcePosting
 

@@ -1,7 +1,8 @@
+import codecs
 import hashlib
 import html
 import re
-import codecs
+
 from bs4 import BeautifulSoup
 
 
