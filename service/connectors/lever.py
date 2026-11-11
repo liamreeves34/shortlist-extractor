@@ -5,10 +5,8 @@ import httpx
 from service.connectors.filter import is_internship
 from service.normalize import content_hash, html_to_text, unicode_to_text
 from service.schemas import Pay, SourcePosting, Structured
-
+from service.connectors.greenhouse import UnknownBoard
 API = "https://api.lever.co/v0/postings/{token}?mode=json"
-class UnknownBoard(Exception): ...
-
 
 client = httpx.Client()
 token = "figma"

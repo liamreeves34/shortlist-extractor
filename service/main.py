@@ -2,10 +2,15 @@ from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from urllib.parse import urlparse
 
+import httpx
 from fastapi import FastAPI, HTTPException, Request
 
 from client.stub_data import stub_postings
 from service.backends import load_backend
+
+from service import connectors
+from service.connectors.greenhouse import UnknownBoard
+
 
 # I need to make sure my requests follow ExtractRequest & FetchRequest,
 # and that my responses follow ExtractResponse and FetchResponse
@@ -57,7 +62,7 @@ def extract(body: ExtractRequest, request: Request) -> ExtractResponse:
         host = urlparse(body.url).hostname
         if host not in ALLOWED_HOSTS:
             raise HTTPException(422, "Invalid input")
-        elif request.app.state.settings.EXTRACTOR_BACKEND == "stub":
+        elif request.app.state.settings.CONNECTOR_MODE != "live":
             text = "(stub mode: the URL was not fetched)"
         else:
             raise HTTPException(501, f"URL host {host!r} isn't supported.")
@@ -85,9 +90,19 @@ def fetch(body: FetchRequest, request: Request) -> FetchResponse:
             body.provider, body.token
         )  # return sample postings as a list of SourcePostings
     else:
-        raise HTTPException(
-            501, "Other Backends Pending"
-        )  # if we aren't in stub, raise error bc we don't have others
+        try:
+            postings = connectors.fetch(
+                body.provider,
+                body.token,
+                user_agent=request.app.state.settings.CONNECTOR_USER_AGENT,
+            )
+        except UnknownBoard as error:
+            raise HTTPException(404, f"No {body.provider} board named {body.token!r}.") from error
+        except httpx.HTTPError as error:
+            raise HTTPException(502, f"{body.provider} didn't answer; try again later.") from error
+        except ValueError as error:
+            raise HTTPException(501, f"No connector for {body.provider!r} yet.") from error
+
     return FetchResponse(
         provider=body.provider,  # return the provider
         token=body.token,  # return the token
