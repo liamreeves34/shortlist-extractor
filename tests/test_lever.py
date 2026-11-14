@@ -107,6 +107,7 @@ def test_salary_range_becomes_pay(postings):
 def test_missing_salary_range_is_none(postings):
     assert postings[BY_TITLE].structured.pay is None
 
+
 def test_unknown_board_raises(http):
     with pytest.raises(UnknownBoard, match="nosuchboard"):
         lever.fetch("nosuchboard", http=http)

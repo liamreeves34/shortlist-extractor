@@ -89,14 +89,16 @@
           "title": "Max"
         },
         "period": {
-          "default": "UNKNOWN",
-          "enum": [
-            "HOUR",
-            "YEAR",
-            "UNKNOWN"
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
           ],
-          "title": "Period",
-          "type": "string"
+          "default": null,
+          "title": "Period"
         },
         "currency": {
           "anyOf": [

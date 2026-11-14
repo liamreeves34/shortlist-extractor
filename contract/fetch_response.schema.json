@@ -27,14 +27,16 @@
           "title": "Max"
         },
         "period": {
-          "default": "UNKNOWN",
-          "enum": [
-            "HOUR",
-            "YEAR",
-            "UNKNOWN"
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
           ],
-          "title": "Period",
-          "type": "string"
+          "default": null,
+          "title": "Period"
         },
         "currency": {
           "anyOf": [
@@ -108,7 +110,8 @@
           "default": {
             "work_mode": null,
             "pay": null,
-            "commitment": null
+            "commitment": null,
+            "deadline": null
           }
         }
       },
@@ -159,6 +162,18 @@
           ],
           "default": null,
           "title": "Commitment"
+        },
+        "deadline": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Deadline"
         }
       },
       "title": "Structured",

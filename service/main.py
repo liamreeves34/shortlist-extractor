@@ -6,11 +6,9 @@ import httpx
 from fastapi import FastAPI, HTTPException, Request
 
 from client.stub_data import stub_postings
-from service.backends import load_backend
-
 from service import connectors
+from service.backends import load_backend
 from service.connectors.greenhouse import UnknownBoard
-
 
 # I need to make sure my requests follow ExtractRequest & FetchRequest,
 # and that my responses follow ExtractResponse and FetchResponse
@@ -23,12 +21,6 @@ from service.schemas import (
     Health,
 )
 from service.settings import Settings
-
-ALLOWED_HOSTS = {
-    "boards.greenhouse.io",
-    "job-boards.greenhouse.io",
-    "jobs.lever.co",
-}
 
 
 # this is going to be important because we will have AI so I need to load it once
@@ -54,24 +46,57 @@ def healthz(request: Request) -> Health:
     return Health(backend=settings.EXTRACTOR_BACKEND, connector_mode=settings.CONNECTOR_MODE)
 
 
+def parse_job_url(url: str) -> tuple[str, str, str] | None:
+    parsed = urlparse(url)
+    host = parsed.hostname
+    if host == None:
+        return None
+
+    parts = [p for p in parsed.path.split("/") if p]
+
+    if (
+        host in ["boards.greenhouse.io", "job-boards.greenhouse.io"]
+        and len(parts) == 3
+        and parts[1] == "jobs"
+    ):
+        return ("greenhouse", parts[0], parts[2])  # returns -> provider, token, jobid
+
+    if host == "jobs.lever.co" and (len(parts) == 2 or (len(parts) == 3 and parts[2] == "apply")):
+        return ("lever", parts[0], parts[1])
+    return None
+
+
 # I need /v1/extract
 @app.post("/v1/extract", response_model=ExtractResponse)
 def extract(body: ExtractRequest, request: Request) -> ExtractResponse:
     # check if there is a url
-    if body.url is not None or "":
-        host = urlparse(body.url).hostname
-        if host not in ALLOWED_HOSTS:
-            raise HTTPException(422, "Invalid input")
-        elif request.app.state.settings.CONNECTOR_MODE != "live":
+    if body.url is not None:
+        parsed = parse_job_url(body.url)
+        if parsed is None:
+            raise HTTPException(422, "Not a Greenhouse or Lever job URL")
+        if request.app.state.settings.CONNECTOR_MODE == "stub":
             text = "(stub mode: the URL was not fetched)"
         else:
-            raise HTTPException(501, f"URL host {host!r} isn't supported.")
+            provider, token, job_id = parsed  # unpack parsed
+        try:  # try to get a list of sourcepostings
+            postings = connectors.fetch(
+                provider, token, user_agent=request.app.state.settings.CONNECTOR_USER_AGENT
+            )
+        except UnknownBoard as error:  # if the sourceposting doesn't exists we raise
+            raise HTTPException(404, "board doesn't exist") from error
+        posting = [
+            p for p in postings if p.external_id == job_id
+        ]  # if the board exists, but the listing given doesn't
+        if posting == None:
+            raise HTTPException(404, "Listing does not exist")  # we raise as well
+        text = posting[0].text  # might as well put the listing's text as text
     else:
-        text = body.text
-
+        text = (
+            body.text
+        )  # if there was no URL, we just put the provided text as what we want to extract
     fields = list(
         body.fields or ALL_FIELDS
-    )  # we either get all fields or some others remain the same.
+    )  # we either get all fields or a few depending on whether other fields are unchanged since last extract.
 
     result = request.app.state.backend.extract(text, fields)
     return ExtractResponse(
