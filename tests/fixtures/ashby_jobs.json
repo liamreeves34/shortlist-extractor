@@ -1,0 +1,140 @@
+{
+  "apiVersion": "1",
+  "jobs": [
+    {
+      "id": "0b8f6a2e-1c3d-4e5f-9a7b-2c4d6e8f0a1b",
+      "title": "Software Engineering Intern",
+      "department": "Engineering",
+      "team": "Platform",
+      "employmentType": "Intern",
+      "location": "Denver, CO",
+      "secondaryLocations": [],
+      "publishedAt": "2026-10-20T15:30:00.000+00:00",
+      "isListed": true,
+      "isRemote": false,
+      "workplaceType": "Hybrid",
+      "address": {
+        "postalAddress": {
+          "addressLocality": "Denver",
+          "addressRegion": "Colorado",
+          "addressCountry": "United States"
+        }
+      },
+      "jobUrl": "https://jobs.ashbyhq.com/ferncliff/0b8f6a2e-1c3d-4e5f-9a7b-2c4d6e8f0a1b",
+      "applyUrl": "https://jobs.ashbyhq.com/ferncliff/0b8f6a2e-1c3d-4e5f-9a7b-2c4d6e8f0a1b/application",
+      "descriptionHtml": "<p>Ferncliff builds trail-mapping software for park services.</p><p>You&rsquo;ll ship features with the platform team.</p><ul><li>Write Python &amp; TypeScript</li></ul>",
+      "descriptionPlain": "Ferncliff builds trail-mapping software for park services.\n\nYou’ll ship features with the platform team.\n\n- Write Python & TypeScript\n",
+      "shouldDisplayCompensationOnJobPostings": true,
+      "compensation": {
+        "compensationTierSummary": "$35 – $45 per hour • Offers Equity",
+        "scrapeableCompensationSalarySummary": "$35 - $45 per hour",
+        "compensationTiers": [],
+        "summaryComponents": [
+          {
+            "id": "c1a2b3c4-0000-4000-8000-000000000001",
+            "summary": "$35 – $45 per hour",
+            "compensationType": "Salary",
+            "interval": "1 HOUR",
+            "currencyCode": "USD",
+            "minValue": 35,
+            "maxValue": 45
+          },
+          {
+            "id": "c1a2b3c4-0000-4000-8000-000000000002",
+            "summary": "Offers Equity",
+            "compensationType": "EquityPercentage",
+            "interval": "NONE",
+            "currencyCode": null,
+            "minValue": null,
+            "maxValue": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "5d7e9f1a-3b5c-4d7e-8f9a-1b3c5d7e9f2a",
+      "title": "Research Assistant, Summer 2027",
+      "department": "Research",
+      "team": "Mapping",
+      "employmentType": "Intern",
+      "location": "Remote (US)",
+      "secondaryLocations": [],
+      "publishedAt": "2026-10-22T09:00:00.000+00:00",
+      "isListed": true,
+      "isRemote": true,
+      "workplaceType": "Remote",
+      "address": null,
+      "jobUrl": "https://jobs.ashbyhq.com/ferncliff/5d7e9f1a-3b5c-4d7e-8f9a-1b3c5d7e9f2a",
+      "applyUrl": "https://jobs.ashbyhq.com/ferncliff/5d7e9f1a-3b5c-4d7e-8f9a-1b3c5d7e9f2a/application",
+      "descriptionHtml": "<p>Help us improve elevation data.</p>",
+      "descriptionPlain": "Help us improve elevation data.\n",
+      "shouldDisplayCompensationOnJobPostings": false,
+      "compensation": {
+        "compensationTierSummary": null,
+        "scrapeableCompensationSalarySummary": null,
+        "compensationTiers": [],
+        "summaryComponents": []
+      }
+    },
+    {
+      "id": "9e1f3a5b-7c9d-4e1f-a3b5-7c9d1e3f5a6b",
+      "title": "Product Designer",
+      "department": "Design",
+      "team": "Design",
+      "employmentType": "FullTime",
+      "location": "Denver, CO",
+      "secondaryLocations": [],
+      "publishedAt": "2026-10-18T12:00:00.000+00:00",
+      "isListed": true,
+      "isRemote": false,
+      "workplaceType": "OnSite",
+      "address": null,
+      "jobUrl": "https://jobs.ashbyhq.com/ferncliff/9e1f3a5b-7c9d-4e1f-a3b5-7c9d1e3f5a6b",
+      "applyUrl": "https://jobs.ashbyhq.com/ferncliff/9e1f3a5b-7c9d-4e1f-a3b5-7c9d1e3f5a6b/application",
+      "descriptionHtml": "<p>Design our map editor.</p>",
+      "descriptionPlain": "Design our map editor.\n",
+      "shouldDisplayCompensationOnJobPostings": true,
+      "compensation": {
+        "compensationTierSummary": "$120K – $140K",
+        "scrapeableCompensationSalarySummary": "$120K - $140K",
+        "compensationTiers": [],
+        "summaryComponents": [
+          {
+            "id": "c1a2b3c4-0000-4000-8000-000000000003",
+            "summary": "$120K – $140K",
+            "compensationType": "Salary",
+            "interval": "1 YEAR",
+            "currencyCode": "USD",
+            "minValue": 120000,
+            "maxValue": 140000
+          }
+        ]
+      }
+    },
+    {
+      "id": "2a4c6e8a-0b2d-4f6a-8c0e-2a4c6e8a0b3c",
+      "title": "Internal Tools Engineer",
+      "department": "Engineering",
+      "team": "Platform",
+      "employmentType": "FullTime",
+      "location": "Denver, CO",
+      "secondaryLocations": [],
+      "publishedAt": "2026-10-19T12:00:00.000+00:00",
+      "isListed": true,
+      "isRemote": false,
+      "workplaceType": "OnSite",
+      "address": null,
+      "jobUrl": "https://jobs.ashbyhq.com/ferncliff/2a4c6e8a-0b2d-4f6a-8c0e-2a4c6e8a0b3c",
+      "applyUrl": "https://jobs.ashbyhq.com/ferncliff/2a4c6e8a-0b2d-4f6a-8c0e-2a4c6e8a0b3c/application",
+      "descriptionHtml": "<p>Build the tools our team uses every day.</p>",
+      "descriptionPlain": "Build the tools our team uses every day.\n",
+      "shouldDisplayCompensationOnJobPostings": false,
+      "compensation": {
+        "compensationTierSummary": null,
+        "scrapeableCompensationSalarySummary": null,
+        "compensationTiers": [],
+        "summaryComponents": []
+      }
+    }
+  ]
+}

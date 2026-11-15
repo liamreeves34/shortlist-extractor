@@ -46,3 +46,14 @@ def test_fetch_returns_two_postings(api):
 def test_fetch_rejects_unknown_provider(api):
     response = api.post("/v1/sources/fetch", json={"provider": "indeed", "token": "x"})
     assert response.status_code == 422
+
+
+def test_fetch_accepts_ashby(api):
+    response = api.post("/v1/sources/fetch", json={"provider": "ashby", "token": "ferncliff"})
+    assert response.status_code == 200
+
+
+def test_extract_url_in_stub_mode_never_fetches(api, network):
+    response = api.post("/v1/extract", json={"url": "https://jobs.lever.co/quillworks/abc-123"})
+    assert response.status_code == 200
+    assert network.requests == []

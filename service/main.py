@@ -1,11 +1,13 @@
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
-from urllib.parse import urlparse
 
+import httpx
 from fastapi import FastAPI, HTTPException, Request
 
 from client.stub_data import stub_postings
+from service import connectors
 from service.backends import load_backend
+from service.connectors.greenhouse import UnknownBoard
 
 # I need to make sure my requests follow ExtractRequest & FetchRequest,
 # and that my responses follow ExtractResponse and FetchResponse
@@ -18,12 +20,6 @@ from service.schemas import (
     Health,
 )
 from service.settings import Settings
-
-ALLOWED_HOSTS = {
-    "boards.greenhouse.io",
-    "job-boards.greenhouse.io",
-    "jobs.lever.co",
-}
 
 
 # this is going to be important because we will have AI so I need to load it once
@@ -53,20 +49,33 @@ def healthz(request: Request) -> Health:
 @app.post("/v1/extract", response_model=ExtractResponse)
 def extract(body: ExtractRequest, request: Request) -> ExtractResponse:
     # check if there is a url
-    if body.url is not None or "":
-        host = urlparse(body.url).hostname
-        if host not in ALLOWED_HOSTS:
-            raise HTTPException(422, "Invalid input")
-        elif request.app.state.settings.EXTRACTOR_BACKEND == "stub":
+    if body.url is not None:
+        parsed = connectors.parse_job_url(body.url)
+        if parsed is None:
+            raise HTTPException(422, "Not a Greenhouse, Lever, or Ashby job URL")
+        if request.app.state.settings.CONNECTOR_MODE == "stub":
             text = "(stub mode: the URL was not fetched)"
         else:
-            raise HTTPException(501, f"URL host {host!r} isn't supported.")
+            provider, token, job_id = parsed  # unpack parsed
+            try:  # try to get a list of sourcepostings
+                postings = connectors.fetch(
+                    provider, token, user_agent=request.app.state.settings.CONNECTOR_USER_AGENT
+                )
+            except UnknownBoard as error:  # if the sourceposting doesn't exists we raise
+                raise HTTPException(404, "board doesn't exist") from error
+            posting = [
+                p for p in postings if p.external_id == job_id
+            ]  # if the board exists, but the listing given doesn't
+            if not posting:  # list comprehension would return [] if there is no job, is or == None would evaluate false.
+                raise HTTPException(404, "Listing does not exist")  # we raise as well
+            text = posting[0].text  # might as well put the listing's text as text
     else:
-        text = body.text
-
+        text = (
+            body.text
+        )  # if there was no URL, we just put the provided text as what we want to extract
     fields = list(
         body.fields or ALL_FIELDS
-    )  # we either get all fields or some others remain the same.
+    )  # we either get all fields or a few depending on whether other fields are unchanged since last extract.
 
     result = request.app.state.backend.extract(text, fields)
     return ExtractResponse(
@@ -85,9 +94,19 @@ def fetch(body: FetchRequest, request: Request) -> FetchResponse:
             body.provider, body.token
         )  # return sample postings as a list of SourcePostings
     else:
-        raise HTTPException(
-            501, "Other Backends Pending"
-        )  # if we aren't in stub, raise error bc we don't have others
+        try:
+            postings = connectors.fetch(
+                body.provider,
+                body.token,
+                user_agent=request.app.state.settings.CONNECTOR_USER_AGENT,
+            )
+        except UnknownBoard as error:
+            raise HTTPException(404, f"No {body.provider} board named {body.token!r}.") from error
+        except httpx.HTTPError as error:
+            raise HTTPException(502, f"{body.provider} didn't answer; try again later.") from error
+        except ValueError as error:
+            raise HTTPException(501, f"No connector for {body.provider!r} yet.") from error
+
     return FetchResponse(
         provider=body.provider,  # return the provider
         token=body.token,  # return the token

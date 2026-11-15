@@ -69,6 +69,7 @@ class Structured(BaseModel):
     work_mode: str | None = None
     pay: Pay | None = None
     commitment: str | None = None
+    deadline: str | None = None
 
 
 class SourcePosting(BaseModel):

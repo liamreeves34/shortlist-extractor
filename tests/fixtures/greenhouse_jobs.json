@@ -1,0 +1,100 @@
+{
+  "jobs": [
+    {
+      "absolute_url": "https://job-boards.greenhouse.io/acmerobotics/jobs/4000001",
+      "data_compliance": [
+        {
+          "type": "gdpr",
+          "requires_consent": false,
+          "requires_processing_consent": false,
+          "requires_retention_consent": false,
+          "retention_period": null,
+          "demographic_data_consent_applies": false
+        }
+      ],
+      "internal_job_id": 3900001,
+      "location": { "name": "Austin, TX" },
+      "metadata": [
+        { "id": 5000001, "name": "Employment Type", "value": "Intern", "value_type": "single_select" }
+      ],
+      "id": 4000001,
+      "updated_at": "2026-10-20T14:03:11-04:00",
+      "requisition_id": "ENG-101",
+      "title": "Software Engineering Intern, Summer 2027",
+      "company_name": "Acme Robotics",
+      "first_published": "2026-10-01T09:00:00-04:00",
+      "language": "en",
+      "application_deadline": "2026-12-01",
+      "content": "&lt;div class=&quot;content-intro&quot;&gt;&lt;p&gt;Acme Robotics builds warehouse robots &amp;amp; the software that runs them.&lt;/p&gt;&lt;/div&gt;&lt;h4&gt;&lt;strong&gt;What you&#39;ll do&lt;/strong&gt;&lt;/h4&gt;\n&lt;ul&gt;\n&lt;li&gt;Write Python services for our fleet&amp;nbsp;manager&lt;/li&gt;\n&lt;li&gt;Ship features with a mentor&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;Learn more on &lt;a href=&quot;https://example.com/about&quot; target=&quot;_blank&quot;&gt;our team’s page&lt;/a&gt;.&lt;/p&gt;&lt;div class=&quot;content-pay-transparency&quot;&gt;&lt;div class=&quot;pay-input&quot;&gt;&lt;div class=&quot;title&quot;&gt;Hourly Pay Range&lt;/div&gt;&lt;div class=&quot;pay-range&quot;&gt;&lt;span&gt;$28&lt;/span&gt;&lt;span class=&quot;divider&quot;&gt;&amp;mdash;&lt;/span&gt;&lt;span&gt;$34 USD&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;\n&lt;hr&gt;\n&lt;p&gt;Acme Robotics is an equal opportunity employer.&lt;/p&gt;",
+      "departments": [{ "id": 101, "name": "Engineering", "child_ids": [], "parent_id": 100 }],
+      "offices": [{ "id": 201, "name": "Austin", "location": "Austin, TX", "child_ids": [], "parent_id": null }],
+      "ai_disclaimer": null,
+      "include_ai_disclaimer": null,
+      "ai_opt_out_request_url": null
+    },
+    {
+      "absolute_url": "https://job-boards.greenhouse.io/acmerobotics/jobs/4000002",
+      "data_compliance": [],
+      "internal_job_id": 3900002,
+      "location": { "name": "Remote, United States" },
+      "metadata": [],
+      "id": 4000002,
+      "updated_at": "2026-10-18T10:00:00-04:00",
+      "requisition_id": "ENG-102",
+      "title": "Senior Backend Engineer",
+      "company_name": "Acme Robotics",
+      "first_published": "2026-09-15T09:00:00-04:00",
+      "language": "en",
+      "application_deadline": null,
+      "content": "&lt;p&gt;Lead the team that keeps our robots talking to each other.&lt;/p&gt;",
+      "departments": [{ "id": 101, "name": "Engineering", "child_ids": [], "parent_id": 100 }],
+      "offices": [],
+      "ai_disclaimer": null,
+      "include_ai_disclaimer": null,
+      "ai_opt_out_request_url": null
+    },
+    {
+      "absolute_url": "https://job-boards.greenhouse.io/acmerobotics/jobs/4000003",
+      "data_compliance": [],
+      "internal_job_id": 3900003,
+      "location": { "name": "Chicago, IL" },
+      "metadata": [],
+      "id": 4000003,
+      "updated_at": "2026-10-17T10:00:00-04:00",
+      "requisition_id": "FIN-201",
+      "title": "Internal Audit Manager",
+      "company_name": "Acme Robotics",
+      "first_published": "2026-09-20T09:00:00-04:00",
+      "language": "en",
+      "application_deadline": null,
+      "content": "&lt;p&gt;Own our internal controls program.&lt;/p&gt;",
+      "departments": [{ "id": 102, "name": "Finance", "child_ids": [], "parent_id": null }],
+      "offices": [],
+      "ai_disclaimer": null,
+      "include_ai_disclaimer": null,
+      "ai_opt_out_request_url": null
+    },
+    {
+      "absolute_url": "https://job-boards.greenhouse.io/acmerobotics/jobs/4000004",
+      "data_compliance": [],
+      "internal_job_id": 3900004,
+      "location": { "name": "Berlin, Germany" },
+      "metadata": [],
+      "id": 4000004,
+      "updated_at": "2026-10-16T10:00:00-04:00",
+      "requisition_id": "SAL-301",
+      "title": "International Sales Representative",
+      "company_name": "Acme Robotics",
+      "first_published": "2026-09-25T09:00:00-04:00",
+      "language": "en",
+      "application_deadline": null,
+      "content": "&lt;p&gt;Sell robots across the EU.&lt;/p&gt;",
+      "departments": [{ "id": 103, "name": "Sales", "child_ids": [], "parent_id": null }],
+      "offices": [],
+      "ai_disclaimer": null,
+      "include_ai_disclaimer": null,
+      "ai_opt_out_request_url": null
+    }
+  ],
+  "meta": { "total": 4 }
+}
