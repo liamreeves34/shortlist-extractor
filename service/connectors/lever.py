@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from typing import Literal
 
 import httpx
 
@@ -8,9 +9,6 @@ from service.normalize import content_hash, html_to_text, unicode_to_text
 from service.schemas import Pay, SourcePosting, Structured
 
 API = "https://api.lever.co/v0/postings/{token}?mode=json"
-
-client = httpx.Client()
-token = "figma"
 
 
 # calling the API at some token will send back a list of jobs for that token. I need to extract only the fields that I want
@@ -52,11 +50,18 @@ def fetch(
         hashed_content = content_hash(content)
 
         salary = job.get("salaryRange") or {}
+
+        # Lever's salaryRange.interval needs to be mapped to the the schema's pay period
+        PERIODS: dict[str, Literal["HOUR", "YEAR"]] = {
+            "per-hour-wage": "HOUR",
+            "per-year-salary": "YEAR",
+        }
+
         pay = (
             Pay(
                 min=salary.get("min"),
                 max=salary.get("max"),
-                period=salary.get("interval"),
+                period=PERIODS.get(salary.get("interval") or "", "UNKNOWN"),
                 currency=salary.get("currency"),
             )
             if salary

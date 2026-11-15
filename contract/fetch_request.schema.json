@@ -3,7 +3,8 @@
     "provider": {
       "enum": [
         "greenhouse",
-        "lever"
+        "lever",
+        "ashby"
       ],
       "title": "Provider",
       "type": "string"

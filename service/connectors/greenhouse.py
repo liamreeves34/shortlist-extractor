@@ -10,10 +10,6 @@ API = "https://boards-api.greenhouse.io/v1/boards/{token}/jobs?content=true"
 class UnknownBoard(Exception): ...
 
 
-client = httpx.Client()
-token = "figma"
-
-
 # calling the API at some token will send back a list of jobs for that token. I need to extract only the fields that I want
 # out of each job posting. and add them to a list of SourcePostings
 def fetch(
@@ -44,7 +40,7 @@ def fetch(
             organization=job["company_name"],
             location_raw=(job.get("location") or {}).get("name"),
             url=job["absolute_url"],
-            updated_at=job["updated_at"],
+            updated_at=job.get("updated_at"),
             text=content,
             content_hash=hashed_content,
             structured=structured,

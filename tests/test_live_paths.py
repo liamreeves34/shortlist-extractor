@@ -13,6 +13,7 @@ from scripts.export_schema import build_schemas
 UA = "shortlist-extractor tests (test@example.com)"
 GREENHOUSE_INTERN = "4000001"
 LEVER_INTERN = "3f2b6c1e-8a4d-4c7e-9b1a-0d5e6f7a8b91"
+ASHBY_INTERN = "0b8f6a2e-1c3d-4e5f-9a7b-2c4d6e8f0a1b"
 
 
 class RecordingBackend:
@@ -56,8 +57,15 @@ def test_fetch_lever(live_api):
     assert len(response.json()["postings"]) == 2
 
 
+def test_fetch_ashby(live_api):
+    response = live_api.post("/v1/sources/fetch", json={"provider": "ashby", "token": "ferncliff"})
+    assert response.status_code == 200
+    assert len(response.json()["postings"]) == 2
+
+
 @pytest.mark.parametrize(
-    ("provider", "token"), [("greenhouse", "acmerobotics"), ("lever", "quillworks")]
+    ("provider", "token"),
+    [("greenhouse", "acmerobotics"), ("lever", "quillworks"), ("ashby", "ferncliff")],
 )
 def test_live_fetch_satisfies_the_contract(live_api, provider, token):
     body = live_api.post("/v1/sources/fetch", json={"provider": provider, "token": token}).json()
@@ -69,7 +77,7 @@ def test_fetch_sends_the_configured_user_agent(live_api, network):
     assert network.requests[0].headers["user-agent"] == UA
 
 
-@pytest.mark.parametrize("provider", ["greenhouse", "lever"])
+@pytest.mark.parametrize("provider", ["greenhouse", "lever", "ashby"])
 def test_unknown_board_is_404(live_api, provider):
     response = live_api.post("/v1/sources/fetch", json={"provider": provider, "token": "nosuch"})
     assert response.status_code == 404
@@ -122,6 +130,21 @@ def test_extract_from_a_lever_url(live_api, backend, url):
     assert "<" not in text
 
 
+@pytest.mark.parametrize(
+    "url",
+    [
+        f"https://jobs.ashbyhq.com/ferncliff/{ASHBY_INTERN}",
+        f"https://jobs.ashbyhq.com/ferncliff/{ASHBY_INTERN}/application",
+    ],
+)
+def test_extract_from_an_ashby_url(live_api, backend, url):
+    response = live_api.post("/v1/extract", json={"url": url, "fields": ["pay"]})
+    assert response.status_code == 200
+    (text,) = backend.texts
+    assert "Ferncliff builds trail-mapping software" in text
+    assert "<" not in text
+
+
 def test_extract_url_response_names_the_backend(live_api, backend):
     url = f"https://jobs.lever.co/quillworks/{LEVER_INTERN}"
     body = live_api.post("/v1/extract", json={"url": url}).json()
@@ -135,6 +158,7 @@ def test_extract_url_response_names_the_backend(live_api, backend):
         "https://jobs.lever.co/quillworks",
         "https://job-boards.greenhouse.io/acmerobotics",
         "https://job-boards.greenhouse.io/acmerobotics/departments/5",
+        "https://jobs.ashbyhq.com/ferncliff",
     ],
 )
 def test_unknown_url_shape_is_422(live_api, network, url):
@@ -154,5 +178,20 @@ def test_extract_url_on_unknown_board_is_404(live_api, backend):
         "/v1/extract",
         json={"url": "https://jobs.lever.co/nosuch/00000000-0000-0000-0000-000000000000"},
     )
+    assert response.status_code == 404
+    assert backend.texts == []
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://jobs.lever.co/quillworks/00000000-0000-0000-0000-000000000000",
+        "https://job-boards.greenhouse.io/acmerobotics/jobs/9999999",
+        "https://jobs.ashbyhq.com/ferncliff/00000000-0000-0000-0000-000000000000",
+    ],
+)
+def test_extract_url_for_a_missing_listing_is_404(live_api, backend, url):
+    # The board exists but has no such listing (filled, or not an internship).
+    response = live_api.post("/v1/extract", json={"url": url})
     assert response.status_code == 404
     assert backend.texts == []

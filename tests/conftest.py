@@ -13,6 +13,7 @@ FIXTURES = Path(__file__).parent / "fixtures"
 # The invented boards in tests/fixtures/. Any other token is a 404.
 GREENHOUSE_TOKEN = "acmerobotics"
 LEVER_TOKEN = "quillworks"
+ASHBY_TOKEN = "ferncliff"
 TEST_USER_AGENT = "shortlist-extractor tests (test@example.com)"
 
 
@@ -35,16 +36,22 @@ def lever_postings():
     return json.loads((FIXTURES / "lever_postings.json").read_text(encoding="utf-8"))
 
 
+@pytest.fixture
+def ashby_jobs():
+    return json.loads((FIXTURES / "ashby_jobs.json").read_text(encoding="utf-8"))
+
+
 class FakeBoards:
-    """Stands in for the Greenhouse and Lever APIs, serving the fixture files.
+    """Stands in for the Greenhouse, Lever and Ashby APIs, serving the fixture files.
 
     Records every request. `queue(...)` makes the next requests return the given
     responses (or raise the given exceptions) before normal routing resumes.
     """
 
-    def __init__(self, greenhouse: dict, lever: list):
+    def __init__(self, greenhouse: dict, lever: list, ashby: dict | None = None):
         self.greenhouse = greenhouse
         self.lever = lever
+        self.ashby = ashby if ashby is not None else {"apiVersion": "1", "jobs": []}
         self.requests: list[httpx.Request] = []
         self.client_kwargs: list[dict] = []  # filled by the `network` fixture
         self.sleeps: list[float] = []  # filled by the `network` fixture
@@ -84,12 +91,16 @@ class FakeBoards:
                 if len(parts) == 4 and posting["id"] == parts[3]:
                     return httpx.Response(200, json=posting)
 
+        # /posting-api/job-board/{token}
+        if host == "api.ashbyhq.com" and parts == ["posting-api", "job-board", ASHBY_TOKEN]:
+            return httpx.Response(200, json=self.ashby)
+
         return httpx.Response(404, json={"ok": False, "error": "Document not found"})
 
 
 @pytest.fixture
-def boards(greenhouse_jobs, lever_postings):
-    return FakeBoards(greenhouse_jobs, lever_postings)
+def boards(greenhouse_jobs, lever_postings, ashby_jobs):
+    return FakeBoards(greenhouse_jobs, lever_postings, ashby_jobs)
 
 
 @pytest.fixture

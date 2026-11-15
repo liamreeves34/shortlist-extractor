@@ -39,7 +39,7 @@ class ExtractRequest(BaseModel):
 class Pay(BaseModel):
     min: float | None = None
     max: float | None = None
-    period: str | None = None
+    period: Literal["HOUR", "YEAR", "UNKNOWN"] = "UNKNOWN"
     currency: str | None = None
 
 
@@ -61,7 +61,7 @@ class ExtractResponse(BaseModel):
 
 # ---------- /v1/sources/fetch ----------
 class FetchRequest(BaseModel):
-    provider: Literal["greenhouse", "lever"]
+    provider: Literal["greenhouse", "lever", "ashby"]
     token: str = Field(min_length=1, max_length=100)
 
 

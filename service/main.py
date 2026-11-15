@@ -1,6 +1,5 @@
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
-from urllib.parse import urlparse
 
 import httpx
 from fastapi import FastAPI, HTTPException, Request
@@ -46,50 +45,30 @@ def healthz(request: Request) -> Health:
     return Health(backend=settings.EXTRACTOR_BACKEND, connector_mode=settings.CONNECTOR_MODE)
 
 
-def parse_job_url(url: str) -> tuple[str, str, str] | None:
-    parsed = urlparse(url)
-    host = parsed.hostname
-    if host == None:
-        return None
-
-    parts = [p for p in parsed.path.split("/") if p]
-
-    if (
-        host in ["boards.greenhouse.io", "job-boards.greenhouse.io"]
-        and len(parts) == 3
-        and parts[1] == "jobs"
-    ):
-        return ("greenhouse", parts[0], parts[2])  # returns -> provider, token, jobid
-
-    if host == "jobs.lever.co" and (len(parts) == 2 or (len(parts) == 3 and parts[2] == "apply")):
-        return ("lever", parts[0], parts[1])
-    return None
-
-
 # I need /v1/extract
 @app.post("/v1/extract", response_model=ExtractResponse)
 def extract(body: ExtractRequest, request: Request) -> ExtractResponse:
     # check if there is a url
     if body.url is not None:
-        parsed = parse_job_url(body.url)
+        parsed = connectors.parse_job_url(body.url)
         if parsed is None:
-            raise HTTPException(422, "Not a Greenhouse or Lever job URL")
+            raise HTTPException(422, "Not a Greenhouse, Lever, or Ashby job URL")
         if request.app.state.settings.CONNECTOR_MODE == "stub":
             text = "(stub mode: the URL was not fetched)"
         else:
             provider, token, job_id = parsed  # unpack parsed
-        try:  # try to get a list of sourcepostings
-            postings = connectors.fetch(
-                provider, token, user_agent=request.app.state.settings.CONNECTOR_USER_AGENT
-            )
-        except UnknownBoard as error:  # if the sourceposting doesn't exists we raise
-            raise HTTPException(404, "board doesn't exist") from error
-        posting = [
-            p for p in postings if p.external_id == job_id
-        ]  # if the board exists, but the listing given doesn't
-        if posting == None:
-            raise HTTPException(404, "Listing does not exist")  # we raise as well
-        text = posting[0].text  # might as well put the listing's text as text
+            try:  # try to get a list of sourcepostings
+                postings = connectors.fetch(
+                    provider, token, user_agent=request.app.state.settings.CONNECTOR_USER_AGENT
+                )
+            except UnknownBoard as error:  # if the sourceposting doesn't exists we raise
+                raise HTTPException(404, "board doesn't exist") from error
+            posting = [
+                p for p in postings if p.external_id == job_id
+            ]  # if the board exists, but the listing given doesn't
+            if not posting:  # list comprehension would return [] if there is no job, is or == None would evaluate false.
+                raise HTTPException(404, "Listing does not exist")  # we raise as well
+            text = posting[0].text  # might as well put the listing's text as text
     else:
         text = (
             body.text

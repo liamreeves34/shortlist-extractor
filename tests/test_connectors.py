@@ -6,9 +6,9 @@ and records time.sleep calls instead of sleeping.
 
 import httpx
 import pytest
-from service.connectors.greenhouse import UnknownBoard
 
 from service import connectors
+from service.connectors.greenhouse import UnknownBoard
 
 UA = "shortlist-extractor tests (test@example.com)"
 
@@ -25,6 +25,12 @@ def test_dispatches_to_lever(network):
     assert network.requests[0].url.host == "api.lever.co"
 
 
+def test_dispatches_to_ashby(network):
+    postings = connectors.fetch("ashby", "ferncliff", user_agent=UA)
+    assert len(postings) == 2
+    assert network.requests[0].url.host == "api.ashbyhq.com"
+
+
 def test_unknown_provider_raises_value_error(network):
     with pytest.raises(ValueError):
         connectors.fetch("workday", "acme", user_agent=UA)
@@ -35,7 +41,8 @@ def test_unknown_provider_raises_value_error(network):
 
 
 @pytest.mark.parametrize(
-    ("provider", "token"), [("greenhouse", "acmerobotics"), ("lever", "quillworks")]
+    ("provider", "token"),
+    [("greenhouse", "acmerobotics"), ("lever", "quillworks"), ("ashby", "ferncliff")],
 )
 def test_every_request_sends_the_user_agent(network, provider, token):
     network.queue(httpx.Response(503))  # force a retry, so there are two requests to check
@@ -97,3 +104,53 @@ def test_does_not_retry_other_client_errors(network):
         connectors.fetch("greenhouse", "acmerobotics", user_agent=UA)
     assert len(network.requests) == 1
     assert network.sleeps == []
+
+
+# ---------- parse_job_url ----------
+
+ASHBY_JOB = "0b8f6a2e-1c3d-4e5f-9a7b-2c4d6e8f0a1b"
+
+
+@pytest.mark.parametrize(
+    ("url", "expected"),
+    [
+        (
+            "https://job-boards.greenhouse.io/AcmeRobotics/jobs/4000001?utm_source=Simplify",
+            ("greenhouse", "acmerobotics", "4000001"),
+        ),
+        (
+            "https://boards.greenhouse.io/acmerobotics/jobs/4000001",
+            ("greenhouse", "acmerobotics", "4000001"),
+        ),
+        ("https://jobs.lever.co/quillworks/abc-123", ("lever", "quillworks", "abc-123")),
+        ("https://jobs.lever.co/quillworks/abc-123/apply", ("lever", "quillworks", "abc-123")),
+        (f"https://jobs.ashbyhq.com/ferncliff/{ASHBY_JOB}", ("ashby", "ferncliff", ASHBY_JOB)),
+        (
+            f"https://jobs.ashbyhq.com/Ferncliff/{ASHBY_JOB}/application?utm_source=Simplify",
+            ("ashby", "ferncliff", ASHBY_JOB),
+        ),
+        (
+            f"https://jobs.ashbyhq.com/Hippocratic%20AI/{ASHBY_JOB}",
+            ("ashby", "hippocratic ai", ASHBY_JOB),
+        ),
+        ("https://jobs.lever.co/arcteryx.com/abc-123", ("lever", "arcteryx.com", "abc-123")),
+    ],
+)
+def test_parse_job_url(url, expected):
+    assert connectors.parse_job_url(url) == expected
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://jobs.ashbyhq.com/",
+        "https://jobs.ashbyhq.com/ferncliff",
+        f"https://jobs.ashbyhq.com/ferncliff/{ASHBY_JOB}/something-else",
+        "https://www.greenhouse.io/careers",
+        "https://boards.greenhouse.io/embed/job_app?for=acmerobotics&token=4000001",
+        "https://evil.example.com/ferncliff/jobs/1",
+        "not a url",
+    ],
+)
+def test_parse_job_url_rejects_other_shapes(url):
+    assert connectors.parse_job_url(url) is None
