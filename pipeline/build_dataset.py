@@ -9,7 +9,9 @@ COLLECTED = MANIFESTS / "collected.jsonl"
 
 SEED = 42
 
-CALIBRATION_SIZE = 50  # postings but will most likey be close to 50 because whole organizations are needed
+CALIBRATION_SIZE = (
+    50  # postings but will most likey be close to 50 because whole organizations are needed
+)
 TEST_SIZE = 125
 
 # Organizations with more postings than this stay in the train pool, so a single

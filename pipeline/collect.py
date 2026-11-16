@@ -1,13 +1,14 @@
-import yaml
 import json
 import time
+from datetime import UTC, datetime
 from pathlib import Path
+
+import yaml
 from httpx import HTTPError
-from datetime import datetime, UTC
+
 from service import connectors
 from service.connectors.greenhouse import UnknownBoard
 from service.settings import Settings
-
 
 # class SourcePosting(BaseModel):
 #     external_id: str
@@ -22,13 +23,16 @@ from service.settings import Settings
 
 
 settings = Settings()
-PROJECT_ROOT= Path(__file__).resolve().parent.parent # __file__ points to the file itself, resolve makes it the absolute path
-                                               # parent is . and another parent is the project root
-                                               
+PROJECT_ROOT = (
+    Path(__file__).resolve().parent.parent
+)  # __file__ points to the file itself, resolve makes it the absolute path
+# parent is . and another parent is the project root
+
 DATA_PATH = PROJECT_ROOT / "data" / "raw"
 MANIFEST = PROJECT_ROOT / "data" / "manifests" / "collected.jsonl"
 
 source_path = PROJECT_ROOT / "sources.yaml"
+
 
 def write_raw():
     DATA_PATH.mkdir(parents=True, exist_ok=True)
@@ -42,7 +46,9 @@ def write_raw():
         for dic in source_list:
             provider, token = dic["provider"], dic["token"]
             try:
-                postings = connectors.fetch(provider, token, user_agent=settings.CONNECTOR_USER_AGENT)
+                postings = connectors.fetch(
+                    provider, token, user_agent=settings.CONNECTOR_USER_AGENT
+                )
             except (UnknownBoard, HTTPError) as error:
                 print(f"skip  {provider}/{token}: {error!r}")
                 continue
@@ -51,23 +57,30 @@ def write_raw():
                 save = DATA_PATH / f"{posting.content_hash.removeprefix('sha256:')}.json"
                 if save.exists():
                     continue
-                
+
                 fetched_at = datetime.now(UTC).isoformat()
-                record = {"provider": provider, 
-                          "token": token, 
-                          "fetched_at": fetched_at,
-                          **posting.model_dump(mode="json")}
-                
-                save.write_text(json.dumps(record, indent=2), encoding="utf-8")
-                
-                manifest.write(json.dumps({
-                    "hash": posting.content_hash, 
-                    "provider": provider, 
+                record = {
+                    "provider": provider,
                     "token": token,
-                    "organization": posting.organization, 
-                    "external_id": posting.external_id,
                     "fetched_at": fetched_at,
-                }) + "\n")
+                    **posting.model_dump(mode="json"),
+                }
+
+                save.write_text(json.dumps(record, indent=2), encoding="utf-8")
+
+                manifest.write(
+                    json.dumps(
+                        {
+                            "hash": posting.content_hash,
+                            "provider": provider,
+                            "token": token,
+                            "organization": posting.organization,
+                            "external_id": posting.external_id,
+                            "fetched_at": fetched_at,
+                        }
+                    )
+                    + "\n"
+                )
                 new += 1
             time.sleep(1)
     print(f"{new} new postings")
@@ -75,4 +88,4 @@ def write_raw():
 
 if __name__ == "__main__":
     write_raw()
-# print(data) 
+# print(data)
