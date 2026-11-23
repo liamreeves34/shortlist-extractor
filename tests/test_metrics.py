@@ -148,7 +148,8 @@ def test_evaluate_scores_only_labeled_postings(tmp_path):
     raw.mkdir()
     texts = {"sha256:a": "Must be a citizen.", "sha256:b": "Anyone.", "sha256:c": "Unlabeled."}
     for h, text in texts.items():
-        (raw / f"{h.removeprefix('sha256:')}.json").write_text(json.dumps({"text": text}))
+        posting = {"title": "Intern", "organization": "Acme", "text": text}
+        (raw / f"{h.removeprefix('sha256:')}.json").write_text(json.dumps(posting))
     manifest = tmp_path / "test.jsonl"
     manifest.write_text("".join(json.dumps({"hash": h}) + "\n" for h in texts))
     gold = tmp_path / "gold.jsonl"

@@ -1,3 +1,5 @@
+from service.normalize import unicode_to_text
+
 """Step 2.3: service/normalize.py.
 
 Decision tested here: content_hash ignores whitespace-only differences, so a
@@ -121,3 +123,12 @@ def test_reformatted_html_gives_the_same_hash():
     tidy = "<p>Apply by Nov 15</p><p>Pay: $30/hr</p>"
     messy = "\n  <p>Apply   by Nov 15</p>\n\n\n  <p>Pay:  $30/hr</p>\n"
     assert content_hash(html_to_text(tidy)) == content_hash(html_to_text(messy))
+
+
+def test_unicode_to_text_keeps_non_ascii():
+    # The old codecs "unicode_escape" call turned these into mojibake (â\x80\x99 and so on).
+    assert unicode_to_text("We\u2019re \u2013 \u00a328k, caf\u00e9") == "We’re – £28k, café"
+
+
+def test_unicode_to_text_decodes_literal_escapes():
+    assert unicode_to_text("<li>Python \\u0026 SQL</li>") == "Python & SQL"

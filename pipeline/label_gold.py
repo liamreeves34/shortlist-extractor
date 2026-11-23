@@ -25,7 +25,7 @@ RAW = PROJECT_ROOT / "data" / "raw"
 MANIFESTS = PROJECT_ROOT / "data" / "manifests"
 GOLD = PROJECT_ROOT / "data" / "labels" / "gold.jsonl"
 
-GUIDE_VERSION = 1  # bump together with "Version:" in docs/labeling_guide.md
+GUIDE_VERSION = 2  # bump together with "Version:" in docs/labeling_guide.md
 
 GOLD_SPLITS = ("test", "calibration")
 
@@ -39,6 +39,19 @@ DEGREE_CODES = {"h": "HIGH_SCHOOL", "a": "ASSOCIATE", "b": "BACHELOR", "m": "MAS
 PAY_PERIODS = {"h": "HOUR", "y": "YEAR", "u": "UNKNOWN"}
 
 TERM_RE = re.compile(r"(Spring|Summer|Fall|Winter) \d{4}")
+# Board values that are fine to offer as Enter defaults (guide v2)
+SLUG_RE = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")  # "geocomply-2", "loftorbital"
+PROGRAM_RE = re.compile(
+    r"\b(?:intern(?:ship)?s?|program(?:me)?s?|recruit(?:ing|ment)|careers?|university|campus)\b"
+    r"|\b(?:inc|llc|ltd|corp|corporation)\b\.?",
+    re.IGNORECASE,
+)
+USPS = (
+    "AL|AK|AZ|AR|CA|CO|CT|DE|DC|FL|GA|HI|ID|IL|IN|IA|KS|KY|LA|ME|MD|MA|MI|MN|MS|MO|MT|NE|NV|NH"
+    "|NJ|NM|NY|NC|ND|OH|OK|OR|PA|RI|SC|SD|TN|TX|UT|VT|VA|WA|WV|WI|WY|PR"
+)
+# Already US `City, ST` (one or more). "Toronto, ON" isn't: non-US is City, Country.
+LOCATION_RE = re.compile(rf"[^,;]+, (?:{USPS})(?:; [^,;]+, (?:{USPS}))*")
 
 
 class Quit(Exception):
@@ -151,14 +164,21 @@ def parse_pay(answer: str) -> dict | None:
 
 def check_consistency(fields: dict) -> list[str]:
     """Cross-field rules from the guide. Returns problems; empty means fine."""
+    # FIXED with no date is allowed: a deadline with no year (guide v2, then set unsure).
     problems = []
-    if fields["deadline_type"] == "FIXED" and fields["deadline"] is None:
-        problems.append("deadline_type is FIXED but there's no deadline date")
     if fields["deadline_type"] != "FIXED" and fields["deadline"] is not None:
         problems.append("a deadline date needs deadline_type FIXED")
     if not fields["title"] or not fields["organization"]:
         problems.append("title and organization are always present")
     return problems
+
+
+def must_be_unsure(fields: dict) -> list[str]:
+    """Cases where the guide requires `unsure` (guide v2). Empty means none."""
+    reasons = []
+    if fields["deadline_type"] == "FIXED" and fields["deadline"] is None:
+        reasons.append("a FIXED deadline with no year (deadline left null)")
+    return reasons
 
 
 # ---------- files ----------
@@ -230,13 +250,28 @@ def menu(choices: list[str]) -> str:
 def label_one(posting: dict) -> dict:
     """Ask every field for one posting and return the fields dict."""
     fields: dict = {}
+    print("  title: drop requisition codes (R-1234) and a trailing location")
     fields["title"] = ask("title", parse_text, posting, posting["title"])
-    fields["organization"] = ask("organization", parse_text, posting, posting["organization"])
+    # The board's organization is often a slug or a program name, and its location is often
+    # not in City, ST form, so they're only offered as the default when they're already right.
+    organization = posting["organization"]
+    print(
+        f"  board organization: {organization}  (use the employer's own name;"
+        " if the body never names it, answer yes to unsure)"
+    )
+    org_default = (
+        "" if SLUG_RE.fullmatch(organization) or PROGRAM_RE.search(organization) else organization
+    )
+    fields["organization"] = ask("organization", parse_text, posting, org_default)
+    location = posting.get("location_raw") or ""
+    print(
+        f"  board location: {location or '-'}  (rewrite as City, ST; header first, then the body's)"
+    )
     fields["location"] = ask(
         "location (City, ST; several joined by '; '; - for none)",
         parse_text,
         posting,
-        posting.get("location_raw") or "",
+        location if LOCATION_RE.fullmatch(location) else "",
     )
     fields["start_term"] = ask("start_term (Summer 2027; - for none)", parse_start_term, posting)
 
@@ -296,7 +331,10 @@ def run(splits: tuple[str, ...]) -> None:
                 if check_consistency(fields):
                     print("  Fix the problems above: relabeling this posting.")
                     continue
-                unsure = yes_no("unsure about any field?")
+                must = must_be_unsure(fields)
+                for reason in must:
+                    print(f"  ! the guide says unsure: {reason}")
+                unsure = yes_no("unsure about any field?", default=bool(must))
                 if yes_no("save?", default=True):
                     break
                 print("  Relabeling this posting.")

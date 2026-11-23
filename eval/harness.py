@@ -1,6 +1,7 @@
 """Step 4.4: score any backend against the gold labels of one split.
 
-`evaluate(backend, manifest)` loads each labeled posting's raw text and gold fields,
+`evaluate(backend, manifest)` loads each labeled posting (header plus body, as
+`render_posting` writes it) and its gold fields,
 calls `backend.extract(text, ALL_FIELDS)`, and scores every field with eval.metrics.
 It only uses the Backend protocol (name, model_version, extract), so the same code
 scores rules, teacher, and student.
@@ -11,6 +12,7 @@ from pathlib import Path
 
 from eval.metrics import FIELD_METRICS, bootstrap
 from service.backends.base import Backend
+from service.normalize import render_posting
 from service.schemas import ALL_FIELDS, Pay
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -63,7 +65,7 @@ def evaluate(
     pairs: dict[str, list] = {field: [] for field in ALL_FIELDS}
     for content_hash in labeled:
         raw_file = raw_dir / f"{content_hash.removeprefix('sha256:')}.json"
-        text = json.loads(raw_file.read_text(encoding="utf-8"))["text"]
+        text = render_posting(json.loads(raw_file.read_text(encoding="utf-8")))
         predicted = backend.extract(text, list(ALL_FIELDS))
         for field in ALL_FIELDS:
             pairs[field].append((gold[content_hash].get(field), _plain(predicted[field].value)))

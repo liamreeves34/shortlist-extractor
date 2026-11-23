@@ -17,7 +17,10 @@ def load_backend(name: str) -> Backend:
         from service.backends.rules import RulesBackend
 
         return RulesBackend()
-    # Added later, one per stage:
-    # if name == "teacher": from service.backends.teacher import TeacherBackend; return TeacherBackend()
+    if name == "teacher":
+        from service.backends.teacher import TeacherBackend
+
+        return TeacherBackend()
+    # Added later:
     # if name == "student": from service.backends.student import StudentBackend; return StudentBackend()
     raise NotImplementedError(f"Backend {name!r} isn't built yet.")

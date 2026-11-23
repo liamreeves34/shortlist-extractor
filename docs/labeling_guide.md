@@ -6,15 +6,17 @@ days, should produce the same label for the same posting. When this guide and yo
 disagree, follow the guide. When the guide doesn't cover a case, decide, then add the case to
 [Decisions log](#decisions-log) so the next posting gets the same answer.
 
-Version: 1 (2026-11-14)
+Version: 2 (2026-11-22)
 
 ---
 
 ## General rules
 
 1. **Label only what the text says.** The model sees only the posting text, so the label must
-   be recoverable from that text. Don't use the API's structured fields, the company's website,
-   or what you know about the employer. A posting that says "Austin, TX" but never says
+   be recoverable from that text. The posting text is the job board's header (the title, the
+   organization and the location, shown above the body) plus the body. Don't use the API's
+   other structured fields (pay, work mode, commitment), the company's website, or what you
+   know about the employer. A posting that says "Austin, TX" but never says
    "in office" has `work_mode = NONE_MENTIONED`.
 2. **Ignore boilerplate that isn't about this role.** Equal-opportunity statements ("without
    regard to citizenship status..."), benefits paragraphs for full-time staff, and company-wide
@@ -32,7 +34,8 @@ Version: 1 (2026-11-14)
 One JSON object per line in `data/labels/gold.jsonl`:
 
 ```json
-{"hash": "sha256:…", "labeled_at": "2026-11-14", "guide_version": 1, "unsure": false,
+{"hash": "sha256:…", "split": "test", "labeled_at": "2026-11-22", "guide_version": 2,
+ "unsure": false,
  "fields": {
    "title": "Software Engineering Intern, Summer 2027",
    "organization": "Acme Robotics",
@@ -81,7 +84,8 @@ formats below matter.
 
 The role's title as the posting states it.
 
-- Copy it from the posting's heading. Keep the term or year if it's part of the title
+- Copy it from the posting's heading, the header's first line. Keep the term or year if
+  it's part of the title
   ("Data Science Intern, Summer 2027").
 - Remove requisition IDs and codes: "Software Intern (R-104552)" → "Software Intern".
 - Remove location suffixes that just repeat the location field:
@@ -97,10 +101,19 @@ The employer as the posting names itself.
 - If a subsidiary posts the job, use the name the posting uses ("AWS", not "Amazon", if the
   posting says AWS).
 - Recruiting agencies: use the hiring company if the posting names it, otherwise the agency.
+- The header's organization line is the job board's account name, which isn't always the
+  employer's own name. It can be a URL slug ("geocomply-2", "loftorbital"; every Ashby and
+  Lever posting) or a board or program name ("Duolingo University Recruitment", "Vestmark
+  Internship Program"). In those cases use the name the body uses for the employer
+  ("We're GeoComply!" → `GeoComply`), then drop legal suffixes. If the body never names the
+  employer, use the header with the program words removed, and set `unsure`.
 
 ### `location`
 
-Where the intern works.
+Where the intern works. Start from the header's location and add any other locations the
+body gives for this role after it, in the body's order. Rewrite every one in the formats
+below: "Costa Mesa, California, United States" → `Costa Mesa, CA`, and a street address
+becomes its `City, ST`.
 
 | Case | Format | Example |
 | --- | --- | --- |
@@ -113,6 +126,11 @@ Where the intern works.
 | Several locations | each one, in the posting's order, joined by `; ` | `Seattle, WA; Austin, TX` |
 | Several locations plus remote | the cities, then `Remote` | `Denver, CO; Remote (US)` |
 | "Multiple locations" with no list | `null` | |
+
+- When the intern may choose to work remotely, list the office cities, then `Remote`.
+  Add `(US)` only if the posting restricts where remote interns live ("must be based in
+  the U.S. for the entire internship" → `Remote (US)`). "Remote/Hybrid - New York" →
+  `New York, NY; Remote`.
 
 ### `start_term`
 
@@ -142,6 +160,11 @@ year. For example, `Summer 2027`.
 
 - "Rolling basis, applications close December 1": `FIXED`. A hard close date wins.
 - "Apply early, we review on a rolling basis" with no date: `ROLLING`.
+- A priority deadline with rolling review and no final close date ("While there is a
+  priority deadline, we review applications on a rolling basis"): `ROLLING`, with
+  `deadline = null`. A priority date isn't a close date.
+- Rolling review until a stated closing date ("reviewed on a rolling basis until the
+  posting closes December 6"): `FIXED`, with that date.
 - A date for something else (interview dates, the program start, a career fair) isn't a
   deadline.
 
@@ -152,8 +175,9 @@ The application close date as `YYYY-MM-DD`, or `null`.
 - `null` whenever `deadline_type` isn't `FIXED`.
 - Use the last day applications are accepted. "Apply by November 15" → `…-11-15`.
   "Applications close at 11:59 pm PT on Nov 15" → `…-11-15`. Ignore times and time zones.
-- A date with no year: use the next occurrence after the posting was published. If you can't
-  tell, use `null` and set `unsure`.
+- A date with no year: use the year only if the posting makes it unambiguous, for example
+  a stated program year or posting date. Otherwise keep `deadline_type = FIXED`, use
+  `deadline = null`, and set `unsure`.
 - Several deadlines (priority and final): use the **final** one.
 
 ---
@@ -170,6 +194,9 @@ The degree programs the posting targets. A set of:
 - "Undergraduate" → `BACHELOR`. "Graduate student" → `["MASTER", "PHD"]`.
 - "Rising juniors and seniors" → `BACHELOR`, because class years imply the level.
 - "Students" with no level, or a field of study with no level: `[]`.
+- "Currently pursuing a degree in Computer Science" names a field but no level: `[]`.
+  Don't guess a level from the field or from the word "intern".
+- "Bachelor's degree required", with no "or higher": `["BACHELOR"]`.
 - Order doesn't matter, but write them in the order above for readability.
 
 ---
@@ -197,6 +224,11 @@ What the posting requires about nationality or work status. Most restrictive fir
   `citizenship = NONE_MENTIONED`, `clearance = ABLE_TO_OBTAIN`, even though clearances
   require citizenship in practice. Rule 1: label what the text says.
 - EEO boilerplate ("without regard to … citizenship status") is `NONE_MENTIONED`.
+- Work authorization mentioned only as a condition for pay ("a stipend is available for
+  students who are lawfully authorized to work"): `NONE_MENTIONED`. It doesn't limit who
+  can apply.
+- "Must be based in the U.S. for the internship" is a location restriction, not work
+  authorization: `NONE_MENTIONED`. It goes into `location` as `Remote (US)`.
 - Requirements about another country ("must have the right to work in Canada") are
   `NONE_MENTIONED`. This field is about the US only. Add a log entry if they turn out to
   be common.
@@ -229,7 +261,11 @@ What the posting requires about a US security clearance. Most restrictive first:
 | `NONE_MENTIONED` | Gives a location but says nothing about where the work happens. |
 
 - An office address alone isn't evidence of `ONSITE` (rule 1).
+- The header's location counts as posting text here too: `Location: Remote` is evidence of
+  `REMOTE`, and "Hybrid - New York" is evidence of `HYBRID`.
 - "Remote or in our Austin office": the posting lets you choose, so `REMOTE`.
+- "Can be hybrid or remote", or a location list ending "or Remote": the intern can choose
+  fully remote, so `REMOTE`.
 - "Remote, must live within commuting distance of Denver" is `REMOTE`. That's a location
   restriction, not office time.
 - Write `ONSITE` as one word, without the Lever API's hyphen.
@@ -249,6 +285,7 @@ or `null` if the posting gives no pay figure.
   - "/hr", "hourly", "per hour" → `HOUR`.
   - "/yr", "annual", "salary", and annual-looking figures with no unit, like "$80,000–$95,000" → `YEAR`.
   - Monthly, weekly or per-program stipends → `UNKNOWN`, with the amounts as written. Don't convert.
+  - An hourly stipend ("a stipend of $24/hour") is pay like any hourly figure: `HOUR`.
 - **Several ranges** (by location or level): the lowest min and the highest max, if they share
   a period. If the periods differ, use the first range listed.
 - **`currency`** is an ISO 4217 code. Use what's stated, or infer `$` from the location:
@@ -280,6 +317,10 @@ libraries, databases, platforms and tools. A set.
 - Tools named only in the company description ("we build on AWS") count only if the posting
   asks the candidate to use them.
 - Excel, Figma and similar tools count if they're named as something the candidate should know.
+- Microsoft and Adobe products take the vendor name: `Microsoft Word`, `Microsoft Excel`,
+  `Microsoft PowerPoint`, `Adobe Photoshop`, `Adobe Illustrator`, `Adobe InDesign`. When the
+  posting names the apps ("Microsoft Office Suite (Word, Excel)"), list the apps, not the
+  suite. "Microsoft Office" with no apps named is `Microsoft Office`.
 
 ---
 
@@ -310,3 +351,16 @@ earlier rule, bump the version at the top and relabel the affected postings.
 | Date | Field | Case | Decision |
 | --- | --- | --- | --- |
 | 2026-11-14 | — | Guide created | Version 1 |
+| 2026-11-22 | all | The job board's title, organization and location are shown above the body | They're posting text (rule 1). The API's other structured fields still aren't. Version 2 |
+| 2026-11-22 | `organization` | The header is a URL slug or a board or program name | Use the body's name for the employer; if none, the header minus program words, and `unsure` |
+| 2026-11-22 | `location` | Header and body both give locations | Header first, then the body's others in order, all rewritten to the table's formats |
+| 2026-11-22 | `work_mode` | The header location says Remote or Hybrid | Counts as evidence, like body text |
+| 2026-11-22 | `deadline` | A date with no year and nothing in the posting fixes the year | `FIXED`, `null`, `unsure`. Replaces "next occurrence after publishing": neither people nor models see the publish date |
+| 2026-11-22 | `deadline_type` | Priority deadline plus rolling review, no final close date | `ROLLING`, `null`; rolling until a stated close date is `FIXED` |
+| 2026-11-22 | `degree_levels` | A field of study with no level; "Bachelor's required" | `[]`; `["BACHELOR"]` (expand only "or higher") |
+| 2026-11-22 | `citizenship` | Work authorization only as a condition for a stipend | `NONE_MENTIONED` |
+| 2026-11-22 | `work_mode` | "Hybrid or remote", or locations "or Remote" | `REMOTE` (the intern can choose) |
+| 2026-11-22 | `location` | The intern may choose remote | Office cities, then `Remote`; `(US)` only if remote interns must live in the U.S. |
+| 2026-11-22 | `citizenship` | "Must be based in the U.S. for the internship" | `NONE_MENTIONED`; it's a location restriction |
+| 2026-11-22 | `pay` | An hourly stipend | `HOUR`, like any hourly figure |
+| 2026-11-22 | `skills` | Microsoft Office and Adobe apps | Vendor-prefixed app names; list the apps when named, else `Microsoft Office` |

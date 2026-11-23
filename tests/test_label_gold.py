@@ -127,8 +127,19 @@ def test_consistent_fields_pass():
 
 
 def test_fixed_needs_a_date_and_a_date_needs_fixed():
-    assert lg.check_consistency(fields(deadline_type="FIXED"))
+    assert lg.check_consistency(fields(deadline_type="FIXED")) == []  # no year (guide v2)
     assert lg.check_consistency(fields(deadline_type="ROLLING", deadline="2026-12-01"))
+
+
+def test_fixed_without_a_date_must_be_unsure():
+    assert lg.must_be_unsure(fields(deadline_type="FIXED"))
+    assert lg.must_be_unsure(fields(deadline_type="FIXED", deadline="2026-12-01")) == []
+
+
+def test_location_default_only_for_us_city_state():
+    assert lg.LOCATION_RE.fullmatch("Austin, TX; Washington, DC")
+    assert not lg.LOCATION_RE.fullmatch("Toronto, ON")
+    assert not lg.LOCATION_RE.fullmatch("London, UK")
 
 
 def test_title_and_organization_are_required():

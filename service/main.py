@@ -8,6 +8,7 @@ from client.stub_data import stub_postings
 from service import connectors
 from service.backends import load_backend
 from service.connectors.greenhouse import UnknownBoard
+from service.normalize import render_posting
 
 # I need to make sure my requests follow ExtractRequest & FetchRequest,
 # and that my responses follow ExtractResponse and FetchResponse
@@ -68,7 +69,8 @@ def extract(body: ExtractRequest, request: Request) -> ExtractResponse:
             ]  # if the board exists, but the listing given doesn't
             if not posting:  # list comprehension would return [] if there is no job, is or == None would evaluate false.
                 raise HTTPException(404, "Listing does not exist")  # we raise as well
-            text = posting[0].text  # might as well put the listing's text as text
+            # header + body, the same shape the backends are trained and evaluated on
+            text = render_posting(posting[0].model_dump())
     else:
         text = (
             body.text
