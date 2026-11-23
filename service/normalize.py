@@ -1,4 +1,3 @@
-import codecs
 import hashlib
 import html
 import re
@@ -41,10 +40,15 @@ def html_to_text(text: str) -> str:  # removes all the html aspects from a descr
     return text.strip()  # further remove any artifact whitespace
 
 
+UNICODE_ESCAPE = re.compile(r"\\u([0-9a-fA-F]{4})")
+
+
 def unicode_to_text(text: str) -> str:
-    text = codecs.decode(text, "unicode_escape")  # precursor step for lever lists
-    text = html_to_text(text)
-    return text
+    # Lever's list content can hold literal \uXXXX escapes, so decode only those.
+    # codecs.decode(text, "unicode_escape") also re-read every non-ASCII character as
+    # Latin-1 bytes, which garbled "We’re" into "Weâ\x80\x99re" in 178 stored postings.
+    text = UNICODE_ESCAPE.sub(lambda match: chr(int(match.group(1), 16)), text)
+    return html_to_text(text)
 
 
 def content_hash(text: str) -> str:
@@ -52,3 +56,22 @@ def content_hash(text: str) -> str:
     return (
         "sha256:" + hashlib.sha256(text.encode("utf-8")).hexdigest()
     )  # return a hashed version of the string.
+
+
+def render_posting(posting: dict) -> str:
+    """A stored posting as every backend sees it: the job board's header, then the body.
+
+    The connectors keep the title, organization and location apart from the body text, and
+    the body usually doesn't repeat them. label_gold.py shows people the same three lines,
+    so the teacher, the eval harness and the student must see them too:
+
+        Software Engineering Intern
+        Organization: Acme Robotics
+        Location: Austin, TX
+
+        <body>
+    """
+    lines = [posting["title"], f"Organization: {posting['organization']}"]
+    if posting.get("location_raw"):
+        lines.append(f"Location: {posting['location_raw']}")
+    return "\n".join(lines) + "\n\n" + posting["text"]

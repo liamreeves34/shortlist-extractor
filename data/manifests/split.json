@@ -1,0 +1,19 @@
+{
+  "seed": 42,
+  "source": "collected.jsonl",
+  "max_heldout_org_size": 10,
+  "splits": {
+    "train_pool": {
+      "postings": 2627,
+      "organizations": 534
+    },
+    "calibration": {
+      "postings": 50,
+      "organizations": 17
+    },
+    "test": {
+      "postings": 125,
+      "organizations": 51
+    }
+  }
+}
