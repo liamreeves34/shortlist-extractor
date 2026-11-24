@@ -8,6 +8,11 @@ Run from the project root:
     uv run python -m pipeline.label_gold                 # test split, then calibration
     uv run python -m pipeline.label_gold --split test    # just one split
 
+At most MAX_PER_ORG postings per organization are labeled (guide v2, decisions log):
+an employer's postings share most of their text, so a 4th one costs time and adds little.
+Within an organization, postings are taken in manifest order. --max-per-org 0 turns the
+cap off.
+
 At any prompt:  ?  show the posting again in a pager    q  save nothing for this posting and quit
 Enter accepts the [default] shown in brackets.
 """
@@ -28,6 +33,7 @@ GOLD = PROJECT_ROOT / "data" / "labels" / "gold.jsonl"
 GUIDE_VERSION = 2  # bump together with "Version:" in docs/labeling_guide.md
 
 GOLD_SPLITS = ("test", "calibration")
+MAX_PER_ORG = 3  # postings labeled per organization in each split; see the docstring
 
 # Allowed values, from docs/labeling_guide.md. The first entry is the default.
 DEADLINE_TYPES = ["NONE_MENTIONED", "FIXED", "ROLLING"]
@@ -197,6 +203,56 @@ def load_queue(splits: tuple[str, ...]) -> list[tuple[str, str]]:
     return queue
 
 
+def manifest_orgs(splits: tuple[str, ...]) -> dict[str, str]:
+    """hash -> the organization its manifest row names (the job board's name)."""
+    orgs = {}
+    for split in splits:
+        with open(MANIFESTS / f"{split}.jsonl", encoding="utf-8") as file:
+            for line in file:
+                if line.strip():
+                    row = json.loads(line)
+                    orgs[row["hash"]] = row["organization"]
+    return orgs
+
+
+def capped_queue(
+    queue: list[tuple[str, str]], done: set[str], orgs: dict[str, str], cap: int
+) -> tuple[list[tuple[str, str]], int]:
+    """(postings still to label, postings skipped by the cap).
+
+    Counts per (split, organization). Postings already labeled count toward the cap and
+    are never dropped, even if an organization ends up over it. cap <= 0 means no cap.
+    """
+    counts: dict[tuple[str, str], int] = {}
+    for split, content_hash in queue:
+        if content_hash in done:
+            key = (split, orgs.get(content_hash, ""))
+            counts[key] = counts.get(key, 0) + 1
+    todo, skipped = [], 0
+    for split, content_hash in queue:
+        if content_hash in done:
+            continue
+        key = (split, orgs.get(content_hash, ""))
+        if cap > 0 and counts.get(key, 0) >= cap:
+            skipped += 1
+            continue
+        counts[key] = counts.get(key, 0) + 1
+        todo.append((split, content_hash))
+    return todo, skipped
+
+
+def empty_postings(queue: list[tuple[str, str]]) -> set[str]:
+    """Hashes in the queue whose stored text is empty (the job board returned no
+    description). There's nothing to label, so they're skipped; the eval harness already
+    ignores postings without a gold label."""
+    empty = set()
+    for _, content_hash in queue:
+        posting = json.loads(raw_path(content_hash).read_text(encoding="utf-8"))
+        if not posting["text"].strip():
+            empty.add(content_hash)
+    return empty
+
+
 def labeled_hashes(path: Path | None = None) -> set[str]:
     path = path or GOLD  # looked up at call time, not when the function is defined
     if not path.exists():
@@ -307,18 +363,25 @@ def yes_no(prompt: str, default: bool = False) -> bool:
     return default if not answer else answer.startswith("y")
 
 
-def run(splits: tuple[str, ...]) -> None:
+def run(splits: tuple[str, ...], max_per_org: int = MAX_PER_ORG) -> None:
     queue = load_queue(splits)
+    empty = empty_postings(queue)
+    queue = [(split, h) for split, h in queue if h not in empty]
     done = labeled_hashes()
-    todo = [(split, h) for split, h in queue if h not in done]
+    todo, skipped = capped_queue(queue, done, manifest_orgs(splits), max_per_org)
+    already = sum(1 for _, h in queue if h in done)
+    target = already + len(todo)
     print(
-        f"{len(queue) - len(todo)}/{len(queue)} labeled; {len(todo)} to go. Guide v{GUIDE_VERSION}."
+        f"{already}/{target} labeled; {len(todo)} to go"
+        f" ({skipped} skipped by the cap of {max_per_org} per organization,"
+        f" {len(empty)} with no text)."
+        f" Guide v{GUIDE_VERSION}."
     )
 
-    for position, (split, content_hash) in enumerate(todo, len(queue) - len(todo) + 1):
+    for position, (split, content_hash) in enumerate(todo, already + 1):
         posting = json.loads(raw_path(content_hash).read_text(encoding="utf-8"))
         print("\n" + "=" * 80)
-        print(f"[{position}/{len(queue)}]  {split}  {content_hash[:19]}…")
+        print(f"[{position}/{target}]  {split}  {content_hash[:19]}…")
         print("=" * 80)
         print(show(posting))
         print("=" * 80)
@@ -352,7 +415,7 @@ def run(splits: tuple[str, ...]) -> None:
                 "fields": fields,
             }
         )
-        print(f"Saved. {position}/{len(queue)} done.")
+        print(f"Saved. {position}/{target} done.")
 
     print("\nAll gold postings are labeled.")
 
@@ -360,8 +423,14 @@ def run(splits: tuple[str, ...]) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--split", choices=GOLD_SPLITS, help="label only this split")
+    parser.add_argument(
+        "--max-per-org",
+        type=int,
+        default=MAX_PER_ORG,
+        help=f"label at most this many postings per organization (default {MAX_PER_ORG}; 0 = all)",
+    )
     args = parser.parse_args()
-    run((args.split,) if args.split else GOLD_SPLITS)
+    run((args.split,) if args.split else GOLD_SPLITS, args.max_per_org)
 
 
 if __name__ == "__main__":

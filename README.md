@@ -16,9 +16,9 @@ This also servers as the extraction service for a larger project *Shortlist*, a 
 
 ## Results
 
-> **Status: in progress.** The rules backend and the evaluation harness are built. Scores will be filled in once the 175 gold labels are finished. The teacher and student rows come in Stages 5 and 6.
+> **Status: in progress.** The rules backend and the evaluation harness are built. Scores will be filled in once the 127 gold labels (93 test, 34 calibration) are finished. The teacher and student rows come in Stages 5 and 6.
 
-Scores on the held-out **test split** (125 postings from 51 organizations that appear nowhere in training). Brackets are 95% bootstrap intervals.
+Scores on the held-out **test split**: 93 labeled postings from 51 organizations that appear nowhere in training, at most 3 per organization. Brackets are 95% bootstrap intervals.
 
 | Metric | Rules | Teacher | Student |
 | --- | --- | --- | --- |
@@ -121,8 +121,8 @@ Raw posting text is employer content, so it is **not committed**. Only the manif
 | Split | Postings | Organizations | Used for |
 | --- | --- | --- | --- |
 | `train_pool` | 2,627 | 534 | Teacher labels, then student training |
-| `calibration` | 50 | 17 | Fitting confidence calibration (Stage 7) |
-| `test` | 125 | 51 | Final scores only; never trained or tuned on |
+| `calibration` | 50 | 17 | Fitting confidence calibration (Stage 7); 34 hand-labeled |
+| `test` | 125 | 51 | Final scores only; never trained or tuned on; 93 hand-labeled |
 
 Details:
 - **Fixed seed (42)**, recorded with the counts in [`data/manifests/split.json`](data/manifests/split.json), so the split is reproducible.
@@ -133,7 +133,9 @@ The split manifests are in [`data/manifests/`](data/manifests/).
 
 ### 3. Gold labels
 
-The 175 calibration and test postings are labeled by hand with [`pipeline/label_gold.py`](pipeline/label_gold.py), following the rules in [`docs/labeling_guide.md`](docs/labeling_guide.md). Labels are written to `data/labels/gold.jsonl` along with the guide version they followed. The labeling script resumes where it left off.
+Calibration and test postings are labeled by hand with [`pipeline/label_gold.py`](pipeline/label_gold.py), following the rules in [`docs/labeling_guide.md`](docs/labeling_guide.md).
+
+**At most 3 postings per organization are labeled** in each split: 93 of the 125 test postings and 34 of the 50 calibration postings, covering every organization. One test posting is skipped because the job board returned no description text. An employer's postings share most of their text, so a 4th posting from the same employer adds little information and would make the intervals look tighter than they are. Within an organization, the postings labeled are the first ones in manifest order; one test organization has 4, because they were labeled before the cap. Labels are written to `data/labels/gold.jsonl` along with the guide version they followed. The labeling script resumes where it left off.
 
 ### 4. Backends
 
@@ -161,7 +163,7 @@ uv run python -m eval.run --backend rules --split test
 
 Macro-F1 is reported alongside accuracy because most postings say nothing about citizenship or clearance. A backend that always answers "none mentioned" gets high accuracy and a poor macro-F1.
 
-The 95% intervals come from 1,000 bootstrap resamples of the test postings with a fixed seed. With 125 postings they are wide, so two backends whose intervals overlap aren't shown to differ.
+The 95% intervals come from 1,000 bootstrap resamples of the test postings with a fixed seed. With 93 postings they are wide, so two backends whose intervals overlap aren't shown to differ.
 
 ## Repository layout
 
@@ -181,7 +183,7 @@ data/         manifests and labels committed; raw postings local only
 
 ## Limitations
 
-- **Small test set.** 125 postings from 51 organizations gives wide confidence intervals. The results support large differences, not small ones.
+- **Small test set.** 93 labeled postings from 51 organizations (at most 3 per organization) gives wide confidence intervals. The results support large differences, not small ones.
 - **One labeler.** The gold labels are a single person's judgment, guided by a written rubric. There is no inter-annotator agreement score.
 - **Snapshot in time.** Postings were collected in fall 2026 for summer 2027 roles. Wording conventions drift.
 - **Few deadlines.** Most collected postings give no application deadline, so deadline scores rest on very few positive examples.
