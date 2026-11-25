@@ -369,5 +369,4 @@ earlier rule, bump the version at the top and relabel the affected postings.
 | 2026-11-22 | `pay` | An hourly stipend | `HOUR`, like any hourly figure |
 | 2026-11-22 | `skills` | Microsoft Office and Adobe apps | Vendor-prefixed app names; list the apps when named, else `Microsoft Office` |
 | 2026-11-23 | — | Gold set size | At most 3 postings per organization per split: 93 test, 34 calibration (one test posting with no text is skipped) |
-| 2026-11-23 | `location` | A city-state (Singapore, Monaco, Hong Kong) | Just the name: `Singapore` |
 | 2026-11-23 | `work_mode` | Only an in-office hours requirement ("work in-office 15+ hours per week"), nothing about remote | `ONSITE` |
