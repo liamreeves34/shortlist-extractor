@@ -8,6 +8,10 @@ disagree, follow the guide. When the guide doesn't cover a case, decide, then ad
 
 Version: 2 (2026-11-22)
 
+**Which postings get labeled.** At most 3 per organization in each split (`label_gold.py`
+skips the rest): an employer's postings share most of their text, so a 4th adds little.
+The script picks them; label every posting it shows you.
+
 ---
 
 ## General rules
@@ -364,3 +368,5 @@ earlier rule, bump the version at the top and relabel the affected postings.
 | 2026-11-22 | `citizenship` | "Must be based in the U.S. for the internship" | `NONE_MENTIONED`; it's a location restriction |
 | 2026-11-22 | `pay` | An hourly stipend | `HOUR`, like any hourly figure |
 | 2026-11-22 | `skills` | Microsoft Office and Adobe apps | Vendor-prefixed app names; list the apps when named, else `Microsoft Office` |
+| 2026-11-23 | — | Gold set size | At most 3 postings per organization per split: 93 test, 34 calibration (one test posting with no text is skipped) |
+| 2026-11-23 | `work_mode` | Only an in-office hours requirement ("work in-office 15+ hours per week"), nothing about remote | `ONSITE` |

@@ -192,3 +192,41 @@ def test_gold_path_is_looked_up_at_call_time(tmp_path, monkeypatch):
     monkeypatch.setattr(lg, "GOLD", tmp_path / "gold.jsonl")
     lg.append_label({"hash": "sha256:x", "fields": {}})
     assert lg.labeled_hashes() == {"sha256:x"}
+
+
+# ---------- the per-organization cap ----------
+
+CAP_QUEUE = [
+    ("test", "a1"),
+    ("test", "a2"),
+    ("test", "a3"),
+    ("test", "a4"),
+    ("test", "b1"),
+    ("calibration", "a5"),
+]
+CAP_ORGS = {"a1": "Acme", "a2": "Acme", "a3": "Acme", "a4": "Acme", "a5": "Acme", "b1": "Beta"}
+
+
+def test_capped_queue_keeps_at_most_cap_per_org_and_split():
+    todo, skipped = lg.capped_queue(CAP_QUEUE, set(), CAP_ORGS, cap=2)
+    assert todo == [("test", "a1"), ("test", "a2"), ("test", "b1"), ("calibration", "a5")]
+    assert skipped == 2  # a3 and a4; the calibration split has its own count
+
+
+def test_capped_queue_counts_labeled_postings_and_never_drops_them():
+    todo, skipped = lg.capped_queue(CAP_QUEUE, {"a2", "a3", "a4"}, CAP_ORGS, cap=2)
+    assert todo == [("test", "b1"), ("calibration", "a5")]  # Acme is already over the cap
+    assert skipped == 1  # a1
+
+
+def test_capped_queue_zero_means_no_cap():
+    todo, skipped = lg.capped_queue(CAP_QUEUE, set(), CAP_ORGS, cap=0)
+    assert todo == CAP_QUEUE
+    assert skipped == 0
+
+
+def test_empty_postings_finds_postings_with_no_text(tmp_path, monkeypatch):
+    monkeypatch.setattr(lg, "RAW", tmp_path)
+    (tmp_path / "aa.json").write_text(json.dumps({"text": "  \n "}), encoding="utf-8")
+    (tmp_path / "bb.json").write_text(json.dumps({"text": "A real posting."}), encoding="utf-8")
+    assert lg.empty_postings([("test", "sha256:aa"), ("test", "sha256:bb")]) == {"sha256:aa"}
