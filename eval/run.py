@@ -30,7 +30,7 @@ def format_section(result: dict, split: str, n_boot: int) -> str:
         f"## {result['backend']} ({result['model_version']}) on {split}, "
         f"{date.today().isoformat()}\n\n"
         f"{result['postings']} labeled postings"
-        f" ({result['unlabeled']} in the split not labeled yet). "
+        f" ({result['unlabeled']} in the split left unlabeled: over the 3-per-organization cap, or empty). "
         f"Intervals: {n_boot} bootstrap resamples of postings.\n"
     )
     return f"{header}\n{format_table(result)}\n"
