@@ -24,13 +24,47 @@ dev = [
     "pytest>=9.1.1",
     "ruff>=0.17.1",
 ]
+# Serving the student on CPU (Stage 6.5). Only installed with --group ml; the Docker image
+# installs it only when built with INSTALL_ML=true. torch comes from PyTorch's CPU-only index.
 ml = [
     "pandas>=3.0.6",
+    "peft>=0.22.0",
     "torch>=2.14.1",
+    "transformers>=5.24.1",
+]
+# Training on your own GPU (Stage 6.2). Never installed in Docker. torch comes from PyTorch's
+# CUDA 13.0 index (RTX 50-series needs CUDA 12.8+; your driver 610 supports 13).
+train = [
+    "accelerate>=1.16.0",
+    "datasets>=5.2.0",
+    "peft>=0.22.0",
+    "torch>=2.14.1",
+    "transformers>=5.24.1",
+    "trl>=1.19.0",
 ]
 
 [tool.uv]
 package = false
+# ml (CPU torch) and train (CUDA torch) can't be installed together, so uv locks each one
+# separately instead of trying to find one torch that satisfies both.
+conflicts = [[{ group = "ml" }, { group = "train" }]]
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cpu", group = "ml" },
+    { index = "pytorch-cu130", group = "train" },
+]
+
+# explicit = true: only torch is looked up here; everything else still comes from PyPI.
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
+explicit = true
 
 [tool.ruff]
 line-length = 100
